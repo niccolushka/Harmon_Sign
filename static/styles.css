@@ -22,7 +22,7 @@ body {
 }
 
 .hero, main {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1640px, calc(100% - 32px));
   margin: 0 auto;
 }
 
@@ -31,11 +31,11 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 40px 0 24px;
+  padding: 34px 0 22px;
 }
 
 h1, h2, p { margin-top: 0; }
-h1 { font-size: clamp(2rem, 5vw, 4rem); margin-bottom: 12px; }
+h1 { font-size: clamp(2rem, 4.5vw, 4rem); margin-bottom: 12px; }
 h2 { margin-bottom: 16px; }
 
 .eyebrow {
@@ -68,9 +68,11 @@ button.danger {
   border: 1px solid rgba(251, 113, 133, 0.35);
 }
 
+.success { background: linear-gradient(135deg, #34d399, #10b981); }
+
 main {
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
   gap: 20px;
   padding-bottom: 40px;
 }
@@ -83,7 +85,7 @@ main {
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
 }
 
-.editor { align-self: start; position: sticky; top: 16px; }
+.editor { align-self: start; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; }
 .grid-form { display: grid; gap: 12px; }
 
 label { display: grid; gap: 6px; color: var(--muted); font-size: 0.92rem; }
@@ -99,9 +101,20 @@ input {
   color: var(--text);
 }
 
-.checkbox { grid-template-columns: auto 1fr; align-items: center; }
-.checkbox input { width: auto; }
+.checkbox, .mode-field label { grid-template-columns: auto 1fr; align-items: center; }
+.checkbox input, .mode-field input { width: auto; }
 .message { min-height: 20px; color: var(--accent); }
+
+.mode-field {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.mode-field legend { color: var(--accent); font-weight: 700; }
 
 .harmonics-list { display: grid; gap: 10px; margin-top: 16px; }
 .harmonic-item {
@@ -115,80 +128,36 @@ input {
 .harmonic-item.disabled { opacity: 0.55; }
 .harmonic-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
-.charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.chart-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 10px; scrollbar-color: var(--accent) var(--card-soft); }
-.chart-scroll canvas { width: 900px; min-width: 900px; height: 300px; display: block; }
-.chart-hint, #filter-info { color: var(--muted); margin: 10px 0 0; font-size: 0.92rem; }
-
-@media (max-width: 900px) {
-  .hero, main { width: min(100% - 20px, 720px); }
-  .hero { align-items: flex-start; flex-direction: column; }
-  main, .charts { grid-template-columns: 1fr; }
-  .editor { position: static; }
-}
-
-.mode-field {
-  display: grid;
-  gap: 8px;
-  margin: 0;
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-}
-
-.mode-field legend { color: var(--accent); font-weight: 700; }
-.mode-field label { grid-template-columns: auto 1fr; align-items: center; }
-.mode-field input { width: auto; }
-
+.charts { display: grid; grid-template-columns: 1fr; gap: 20px; min-width: 0; }
 .chart-toolbar {
-  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
-
-.zoom-control {
-  width: min(420px, 100%);
-}
-
-#hover-info {
-  color: var(--muted);
-}
-
-.chart-scroll canvas {
-  width: 1400px;
-  min-width: 1400px;
-  height: 340px;
-}
-
-@media (max-width: 900px) {
-  .chart-toolbar { align-items: flex-start; flex-direction: column; }
-}
-
-.success {
-  background: linear-gradient(135deg, #34d399, #10b981);
-}
-
-.hero, main {
-  width: min(1760px, calc(100% - 24px));
-}
-
-main {
-  grid-template-columns: 380px minmax(0, 1fr);
-}
-
-.charts {
-  grid-template-columns: 1fr;
-}
+.zoom-control { width: min(420px, 100%); }
+#hover-info { color: var(--muted); }
 
 .chart-scroll {
   width: 100%;
-  min-height: 560px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 10px;
+  scrollbar-color: var(--accent) var(--card-soft);
 }
 
 .chart-scroll canvas {
-  width: 1900px;
-  min-width: 1900px;
-  height: 540px;
+  width: 100%;
+  min-width: 100%;
+  height: clamp(360px, 46vh, 520px);
+  display: block;
+}
+
+.chart-hint, #filter-info { color: var(--muted); margin: 10px 0 0; font-size: 0.92rem; }
+
+@media (max-width: 1100px) {
+  .hero { align-items: flex-start; flex-direction: column; }
+  main { grid-template-columns: 1fr; }
+  .editor { position: static; max-height: none; }
+  .chart-toolbar { align-items: flex-start; flex-direction: column; }
 }

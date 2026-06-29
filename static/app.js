@@ -1,4 +1,4 @@
-const state = { harmonics: [], visualization: null, zoom: 1.5 };
+const state = { harmonics: [], visualization: null, zoom: 1 };
 const fields = ["amplitude", "frequency", "phase", "harmonic"];
 const sliderPairs = fields.map((field) => [field, `${field}-slider`]);
 const colors = ["#38bdf8", "#f97316", "#a78bfa", "#34d399", "#f472b6", "#fbbf24"];
@@ -127,9 +127,10 @@ async function deleteHarmonic(id) {
   await loadData();
 }
 
-function setupCanvas(canvas, preferredWidth = 1900) {
+function setupCanvas(canvas) {
   const ratio = window.devicePixelRatio || 1;
-  const width = Math.max(canvas.parentElement.clientWidth, preferredWidth * state.zoom);
+  const containerWidth = canvas.parentElement.clientWidth || 900;
+  const width = Math.max(containerWidth, containerWidth * state.zoom);
   const height = canvas.clientHeight;
   canvas.style.width = `${width}px`;
   canvas.width = width * ratio;
@@ -192,8 +193,7 @@ function drawLine(context, values, width, height, min, max, color, widthLine = 2
 }
 
 function drawLineChart(canvas, labels, series) {
-  const preferredWidth = Math.max(1900, labels.length * 4.5);
-  const { context, width, height } = setupCanvas(canvas, preferredWidth);
+  const { context, width, height } = setupCanvas(canvas);
   context.clearRect(0, 0, width, height);
   const allValues = series.flatMap((item) => item.values);
   const min = Math.min(...allValues, -1);
@@ -229,8 +229,7 @@ function logPosition(value, minFrequency, maxFrequency, width) {
 }
 
 function drawSpectrum(canvas, points, color) {
-  const preferredWidth = Math.max(1900, points.length * 220);
-  const { context, width, height } = setupCanvas(canvas, preferredWidth);
+  const { context, width, height } = setupCanvas(canvas);
   context.clearRect(0, 0, width, height);
   const positive = points.filter((point) => point.frequency > 0);
   const maxFrequency = Math.max(...positive.map((point) => point.frequency), 10);
