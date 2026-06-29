@@ -135,7 +135,6 @@ input {
   justify-content: space-between;
   gap: 16px;
 }
-.zoom-control { width: min(420px, 100%); }
 #hover-info { color: var(--muted); }
 
 .chart-scroll {

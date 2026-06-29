@@ -1,4 +1,4 @@
-const state = { harmonics: [], visualization: null, zoom: 1 };
+const state = { harmonics: [], visualization: null };
 const fields = ["amplitude", "frequency", "phase", "harmonic"];
 const sliderPairs = fields.map((field) => [field, `${field}-slider`]);
 const colors = ["#38bdf8", "#f97316", "#a78bfa", "#34d399", "#f472b6", "#fbbf24"];
@@ -129,8 +129,7 @@ async function deleteHarmonic(id) {
 
 function setupCanvas(canvas) {
   const ratio = window.devicePixelRatio || 1;
-  const containerWidth = canvas.parentElement.clientWidth || 900;
-  const width = Math.max(containerWidth, containerWidth * state.zoom);
+  const width = canvas.parentElement.clientWidth || 900;
   const height = canvas.clientHeight;
   canvas.style.width = `${width}px`;
   canvas.width = width * ratio;
@@ -285,10 +284,6 @@ document.getElementById("harmonic-form").addEventListener("submit", async (event
 
 document.getElementById("apply-preview").addEventListener("click", () => applyPreview().catch((error) => setMessage(error.message)));
 document.getElementById("reset-form").addEventListener("click", () => fillForm(null));
-document.getElementById("chart-zoom").addEventListener("input", (event) => {
-  state.zoom = Number(event.target.value);
-  renderCharts();
-});
 setupSliderSync();
 setupHoverInfo();
 window.addEventListener("resize", renderCharts);
