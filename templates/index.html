@@ -11,7 +11,7 @@
       <div>
         <p class="eyebrow">HTML · CSS · JS · Python · SQLite</p>
         <h1>Визуализация гармонического сигнала</h1>
-        <p>Настраивайте гармоники слайдерами, складывайте сигнал и проматывайте графики со шкалами.</p>
+        <p>Настраивайте гармоники слайдерами, разделяйте сумму и отдельные сигналы, проматывайте графики со шкалами.</p>
       </div>
       <a class="export" href="/api/export">Экспорт JSON</a>
     </header>
@@ -46,6 +46,12 @@
             <input id="harmonic-slider" type="range" min="1" max="20" step="1" value="1" />
           </label>
 
+          <fieldset class="mode-field">
+            <legend>Режим добавления</legend>
+            <label><input type="radio" name="mode" value="sum" checked /> Добавить гармонику в сумму</label>
+            <label><input type="radio" name="mode" value="signal" /> Добавить только отдельный сигнал на график</label>
+          </fieldset>
+
           <label class="checkbox"><input id="enabled" type="checkbox" checked /> Активна</label>
           <button type="submit">Сохранить</button>
           <button type="button" id="reset-form" class="secondary">Новая гармоника</button>
@@ -55,6 +61,13 @@
       </section>
 
       <section class="charts">
+        <div class="panel chart-toolbar">
+          <label class="zoom-control">
+            <span>Масштаб ширины графиков</span>
+            <input id="chart-zoom" type="range" min="1" max="3" step="0.25" value="1.5" />
+          </label>
+          <span id="hover-info">Наведите курсор на график, чтобы увидеть координаты.</span>
+        </div>
         <article class="panel chart-card">
           <h2>Суммарный сигнал</h2>
           <div class="chart-scroll"><canvas id="signal-chart"></canvas></div>
@@ -63,12 +76,12 @@
         <article class="panel chart-card">
           <h2>Спектр</h2>
           <div class="chart-scroll"><canvas id="spectrum-chart"></canvas></div>
-          <p class="chart-hint">Шкала X — частота, Y — амплитуда.</p>
+          <p class="chart-hint">Шкала X — частота в логарифмическом масштабе, Y — амплитуда.</p>
         </article>
         <article class="panel chart-card">
           <h2>Чистый спектр гармоник</h2>
           <div class="chart-scroll"><canvas id="pure-spectrum-chart"></canvas></div>
-          <p class="chart-hint">Показывает только заданные гармоники без шумовых составляющих.</p>
+          <p class="chart-hint">Логарифмическая шкала X показывает только гармоники, добавленные в сумму.</p>
         </article>
         <article class="panel chart-card">
           <h2>Отфильтрованный спектр</h2>

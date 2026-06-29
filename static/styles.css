@@ -126,3 +126,42 @@ input {
   main, .charts { grid-template-columns: 1fr; }
   .editor { position: static; }
 }
+
+.mode-field {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.mode-field legend { color: var(--accent); font-weight: 700; }
+.mode-field label { grid-template-columns: auto 1fr; align-items: center; }
+.mode-field input { width: auto; }
+
+.chart-toolbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.zoom-control {
+  width: min(420px, 100%);
+}
+
+#hover-info {
+  color: var(--muted);
+}
+
+.chart-scroll canvas {
+  width: 1400px;
+  min-width: 1400px;
+  height: 340px;
+}
+
+@media (max-width: 900px) {
+  .chart-toolbar { align-items: flex-start; flex-direction: column; }
+}

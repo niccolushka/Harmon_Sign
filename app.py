@@ -32,18 +32,22 @@ def init_db() -> None:
                 frequency REAL NOT NULL,
                 phase REAL NOT NULL,
                 harmonic INTEGER NOT NULL,
-                enabled INTEGER NOT NULL DEFAULT 1
+                enabled INTEGER NOT NULL DEFAULT 1,
+                mode TEXT NOT NULL DEFAULT 'sum'
             )
             """
         )
+        columns = [row[1] for row in connection.execute("PRAGMA table_info(harmonics)").fetchall()]
+        if "mode" not in columns:
+            connection.execute("ALTER TABLE harmonics ADD COLUMN mode TEXT NOT NULL DEFAULT 'sum'")
         count = connection.execute("SELECT COUNT(*) FROM harmonics").fetchone()[0]
         if count == 0:
             connection.execute(
                 """
-                INSERT INTO harmonics (amplitude, frequency, phase, harmonic, enabled)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO harmonics (amplitude, frequency, phase, harmonic, enabled, mode)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (1.0, 5.0, 0.0, 1, 1),
+                (1.0, 5.0, 0.0, 1, 1, "sum"),
             )
         connection.commit()
 
@@ -57,6 +61,7 @@ def row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
         "phase": row["phase"],
         "harmonic": row["harmonic"],
         "enabled": bool(row["enabled"]),
+        "mode": row["mode"],
     }
 
 
@@ -68,6 +73,7 @@ def validate_harmonic(payload: dict[str, Any]) -> tuple[dict[str, Any] | None, s
         phase = float(payload.get("phase", 0))
         harmonic = int(payload.get("harmonic", 1))
         enabled = 1 if bool(payload.get("enabled", True)) else 0
+        mode = str(payload.get("mode", "sum"))
     except (TypeError, ValueError):
         return None, "Амплитуда, частота, фаза и номер гармоники должны быть числами."
 
@@ -77,6 +83,8 @@ def validate_harmonic(payload: dict[str, Any]) -> tuple[dict[str, Any] | None, s
         return None, "Частота должна быть больше нуля."
     if harmonic <= 0:
         return None, "Номер гармоники должен быть положительным целым числом."
+    if mode not in {"sum", "signal"}:
+        return None, "Режим должен быть: добавить в сумму или показать отдельным сигналом."
 
     return {
         "amplitude": amplitude,
@@ -84,7 +92,19 @@ def validate_harmonic(payload: dict[str, Any]) -> tuple[dict[str, Any] | None, s
         "phase": phase,
         "harmonic": harmonic,
         "enabled": enabled,
+        "mode": mode,
     }, None
+
+
+def count_standalone_signals(exclude_id: int | None = None) -> int:
+    """Считает активные отдельные сигналы, чтобы ограничить график пятью линиями."""
+    query = "SELECT COUNT(*) FROM harmonics WHERE mode = 'signal' AND enabled = 1"
+    params: tuple[Any, ...] = ()
+    if exclude_id is not None:
+        query += " AND id != ?"
+        params = (exclude_id,)
+    with get_connection() as connection:
+        return int(connection.execute(query, params).fetchone()[0])
 
 
 def fetch_harmonics() -> list[dict[str, Any]]:
@@ -97,6 +117,8 @@ def fetch_harmonics() -> list[dict[str, Any]]:
 def build_signal(harmonics: list[dict[str, Any]]) -> dict[str, Any]:
     """Рассчитывает сигнал, спектр, чистый спектр и отфильтрованный спектр."""
     enabled = [item for item in harmonics if item["enabled"]]
+    sum_items = [item for item in enabled if item["mode"] == "sum"]
+    signal_items = [item for item in enabled if item["mode"] == "signal"]
     max_frequency = max((item["frequency"] * item["harmonic"] for item in enabled), default=10.0)
     duration = 1.0
     sample_count = 512
@@ -104,25 +126,33 @@ def build_signal(harmonics: list[dict[str, Any]]) -> dict[str, Any]:
     time_points: list[float] = []
     signal_points: list[float] = []
     filtered_points: list[float] = []
+    standalone_points: list[dict[str, Any]] = [
+        {"id": item["id"], "name": f"Сигнал #{item['id']}", "points": []}
+        for item in signal_items[:5]
+    ]
 
     for index in range(sample_count):
         time_value = duration * index / sample_count
         value = 0.0
         filtered_value = 0.0
-        for item in enabled:
+        for item in sum_items:
             actual_frequency = item["frequency"] * item["harmonic"]
             angle = 2 * math.pi * actual_frequency * time_value + math.radians(item["phase"])
             harmonic_value = item["amplitude"] * math.sin(angle)
             value += harmonic_value
             if actual_frequency <= cutoff_frequency:
                 filtered_value += harmonic_value
+        for signal, item in zip(standalone_points, signal_items[:5]):
+            actual_frequency = item["frequency"] * item["harmonic"]
+            angle = 2 * math.pi * actual_frequency * time_value + math.radians(item["phase"])
+            signal["points"].append(round(item["amplitude"] * math.sin(angle), 5))
         time_points.append(round(time_value, 5))
         signal_points.append(round(value, 5))
         filtered_points.append(round(filtered_value, 5))
 
     spectrum = []
     filtered_spectrum = []
-    for item in enabled:
+    for item in sum_items:
         actual_frequency = item["frequency"] * item["harmonic"]
         point = {"frequency": round(actual_frequency, 5), "amplitude": round(item["amplitude"], 5), "phase": round(item["phase"], 5)}
         spectrum.append(point)
@@ -133,6 +163,7 @@ def build_signal(harmonics: list[dict[str, Any]]) -> dict[str, Any]:
         "time": time_points,
         "signal": signal_points,
         "filteredSignal": filtered_points,
+        "standaloneSignals": standalone_points,
         "spectrum": spectrum,
         "pureSpectrum": spectrum,
         "filteredSpectrum": filtered_spectrum,
@@ -165,9 +196,12 @@ class HarmonicHandler(BaseHTTPRequestHandler):
         if error:
             self.send_json({"error": error}, HTTPStatus.BAD_REQUEST)
             return
+        if data["mode"] == "signal" and data["enabled"] and count_standalone_signals() >= 5:
+            self.send_json({"error": "На график можно добавить не больше 5 отдельных сигналов."}, HTTPStatus.BAD_REQUEST)
+            return
         with get_connection() as connection:
             cursor = connection.execute(
-                "INSERT INTO harmonics (amplitude, frequency, phase, harmonic, enabled) VALUES (:amplitude, :frequency, :phase, :harmonic, :enabled)",
+                "INSERT INTO harmonics (amplitude, frequency, phase, harmonic, enabled, mode) VALUES (:amplitude, :frequency, :phase, :harmonic, :enabled, :mode)",
                 data,
             )
             connection.commit()
@@ -182,11 +216,14 @@ class HarmonicHandler(BaseHTTPRequestHandler):
         if error:
             self.send_json({"error": error}, HTTPStatus.BAD_REQUEST)
             return
+        if data["mode"] == "signal" and data["enabled"] and count_standalone_signals(harmonic_id) >= 5:
+            self.send_json({"error": "На график можно добавить не больше 5 отдельных сигналов."}, HTTPStatus.BAD_REQUEST)
+            return
         with get_connection() as connection:
             cursor = connection.execute(
                 """
                 UPDATE harmonics
-                SET amplitude = :amplitude, frequency = :frequency, phase = :phase, harmonic = :harmonic, enabled = :enabled
+                SET amplitude = :amplitude, frequency = :frequency, phase = :phase, harmonic = :harmonic, enabled = :enabled, mode = :mode
                 WHERE id = :id
                 """,
                 {**data, "id": harmonic_id},
