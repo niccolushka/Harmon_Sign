@@ -1,5 +1,6 @@
 const state = { harmonics: [], visualization: null };
 const fields = ["amplitude", "frequency", "phase", "harmonic"];
+const sliderPairs = fields.map((field) => [field, `${field}-slider`]);
 const canvases = {
   signal: document.getElementById("signal-chart"),
   spectrum: document.getElementById("spectrum-chart"),
@@ -42,6 +43,28 @@ function fillForm(item) {
   document.getElementById("phase").value = item?.phase ?? 0;
   document.getElementById("harmonic").value = item?.harmonic ?? 1;
   document.getElementById("enabled").checked = item?.enabled ?? true;
+  syncSlidersFromInputs();
+}
+
+function syncSlidersFromInputs() {
+  sliderPairs.forEach(([inputId, sliderId]) => {
+    document.getElementById(sliderId).value = document.getElementById(inputId).value;
+  });
+}
+
+function setupSliderSync() {
+  sliderPairs.forEach(([inputId, sliderId]) => {
+    const input = document.getElementById(inputId);
+    const slider = document.getElementById(sliderId);
+    slider.addEventListener("input", () => {
+      input.value = slider.value;
+      setMessage("");
+    });
+    input.addEventListener("input", () => {
+      slider.value = input.value;
+      setMessage("");
+    });
+  });
 }
 
 function setMessage(text) {
@@ -84,10 +107,11 @@ async function deleteHarmonic(id) {
   await loadData();
 }
 
-function setupCanvas(canvas) {
+function setupCanvas(canvas, preferredWidth = 900) {
   const ratio = window.devicePixelRatio || 1;
-  const width = canvas.clientWidth;
+  const width = Math.max(canvas.parentElement.clientWidth, preferredWidth);
   const height = canvas.clientHeight;
+  canvas.style.width = `${width}px`;
   canvas.width = width * ratio;
   canvas.height = height * ratio;
   const context = canvas.getContext("2d");
@@ -95,47 +119,83 @@ function setupCanvas(canvas) {
   return { context, width, height };
 }
 
-function drawAxes(context, width, height) {
+function drawAxes(context, width, height, xLabels = [], yMin = -1, yMax = 1) {
+  const left = 52;
+  const bottom = height - 34;
   context.strokeStyle = "rgba(255,255,255,0.14)";
+  context.fillStyle = "#9fb0c7";
+  context.font = "12px sans-serif";
   context.lineWidth = 1;
+
   context.beginPath();
-  context.moveTo(42, 16);
-  context.lineTo(42, height - 30);
-  context.lineTo(width - 12, height - 30);
+  context.moveTo(left, 16);
+  context.lineTo(left, bottom);
+  context.lineTo(width - 12, bottom);
   context.stroke();
+
+  const yTicks = 4;
+  for (let tick = 0; tick <= yTicks; tick += 1) {
+    const y = 16 + (tick / yTicks) * (bottom - 16);
+    const value = yMax - (tick / yTicks) * (yMax - yMin);
+    context.strokeStyle = "rgba(255,255,255,0.08)";
+    context.beginPath();
+    context.moveTo(left, y);
+    context.lineTo(width - 12, y);
+    context.stroke();
+    context.fillText(value.toFixed(2), 6, y + 4);
+  }
+
+  xLabels.forEach(({ x, label }) => {
+    context.strokeStyle = "rgba(255,255,255,0.08)";
+    context.beginPath();
+    context.moveTo(x, 16);
+    context.lineTo(x, bottom);
+    context.stroke();
+    context.fillText(label, x - 14, height - 12);
+  });
 }
 
 function drawLineChart(canvas, labels, values, color) {
-  const { context, width, height } = setupCanvas(canvas);
+  const preferredWidth = Math.max(900, labels.length * 2.2);
+  const { context, width, height } = setupCanvas(canvas, preferredWidth);
   context.clearRect(0, 0, width, height);
-  drawAxes(context, width, height);
   const min = Math.min(...values, -1);
   const max = Math.max(...values, 1);
+  const xTicks = Array.from({ length: 6 }, (_, tick) => {
+    const index = Math.round((tick / 5) * (labels.length - 1));
+    return { x: 52 + (index / (labels.length - 1)) * (width - 68), label: `${labels[index].toFixed(2)}с` };
+  });
+  drawAxes(context, width, height, xTicks, min, max);
   context.strokeStyle = color;
   context.lineWidth = 2;
   context.beginPath();
   values.forEach((value, index) => {
-    const x = 42 + (index / (labels.length - 1)) * (width - 58);
-    const y = 16 + ((max - value) / (max - min || 1)) * (height - 46);
+    const x = 52 + (index / (labels.length - 1)) * (width - 68);
+    const y = 16 + ((max - value) / (max - min || 1)) * (height - 50);
     index === 0 ? context.moveTo(x, y) : context.lineTo(x, y);
   });
   context.stroke();
 }
 
 function drawSpectrum(canvas, points, color) {
-  const { context, width, height } = setupCanvas(canvas);
+  const preferredWidth = Math.max(900, points.length * 130);
+  const { context, width, height } = setupCanvas(canvas, preferredWidth);
   context.clearRect(0, 0, width, height);
-  drawAxes(context, width, height);
   const maxFrequency = Math.max(...points.map((point) => point.frequency), 1);
   const maxAmplitude = Math.max(...points.map((point) => point.amplitude), 1);
+  const xTicks = Array.from({ length: 6 }, (_, tick) => {
+    const value = (tick / 5) * maxFrequency;
+    return { x: 52 + (value / maxFrequency) * (width - 80), label: `${value.toFixed(1)}Гц` };
+  });
+  drawAxes(context, width, height, xTicks, 0, maxAmplitude);
   points.forEach((point) => {
-    const x = 42 + (point.frequency / maxFrequency) * (width - 70);
-    const barHeight = (point.amplitude / maxAmplitude) * (height - 54);
+    const x = 52 + (point.frequency / maxFrequency) * (width - 80);
+    const barHeight = (point.amplitude / maxAmplitude) * (height - 58);
     context.fillStyle = color;
-    context.fillRect(x - 5, height - 30 - barHeight, 10, barHeight);
+    context.fillRect(x - 6, height - 34 - barHeight, 12, barHeight);
     context.fillStyle = "#9fb0c7";
     context.font = "12px sans-serif";
-    context.fillText(`${point.frequency}Гц`, Math.max(44, x - 20), height - 10);
+    context.fillText(`${point.frequency}Гц`, Math.max(54, x - 20), height - 12);
   });
 }
 
@@ -160,6 +220,6 @@ document.getElementById("harmonic-form").addEventListener("submit", async (event
 });
 
 document.getElementById("reset-form").addEventListener("click", () => fillForm(null));
-fields.forEach((field) => document.getElementById(field).addEventListener("input", () => setMessage("")));
+setupSliderSync();
 window.addEventListener("resize", renderCharts);
 loadData().catch((error) => setMessage(error.message));

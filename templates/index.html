@@ -11,7 +11,7 @@
       <div>
         <p class="eyebrow">HTML · CSS · JS · Python · SQLite</p>
         <h1>Визуализация гармонического сигнала</h1>
-        <p>Редактируйте амплитуду, фазу, частоту и номер гармоники, складывайте гармоники и сравнивайте спектры.</p>
+        <p>Настраивайте гармоники слайдерами, складывайте сигнал и проматывайте графики со шкалами.</p>
       </div>
       <a class="export" href="/api/export">Экспорт JSON</a>
     </header>
@@ -21,10 +21,31 @@
         <h2>Гармоники</h2>
         <form id="harmonic-form" class="grid-form">
           <input type="hidden" id="harmonic-id" />
-          <label>Амплитуда<input id="amplitude" type="number" min="0" step="0.1" value="1" required /></label>
-          <label>Частота, Гц<input id="frequency" type="number" min="0.1" step="0.1" value="5" required /></label>
-          <label>Фаза, °<input id="phase" type="number" step="1" value="0" required /></label>
-          <label>Гармоника №<input id="harmonic" type="number" min="1" step="1" value="1" required /></label>
+
+          <label class="slider-field">
+            <span>Амплитуда</span>
+            <input id="amplitude" type="number" min="0" max="10" step="0.1" value="1" required />
+            <input id="amplitude-slider" type="range" min="0" max="10" step="0.1" value="1" />
+          </label>
+
+          <label class="slider-field">
+            <span>Частота, Гц</span>
+            <input id="frequency" type="number" min="0.1" max="100" step="0.1" value="5" required />
+            <input id="frequency-slider" type="range" min="0.1" max="100" step="0.1" value="5" />
+          </label>
+
+          <label class="slider-field">
+            <span>Фаза, °</span>
+            <input id="phase" type="number" min="-180" max="180" step="1" value="0" required />
+            <input id="phase-slider" type="range" min="-180" max="180" step="1" value="0" />
+          </label>
+
+          <label class="slider-field">
+            <span>Гармоника №</span>
+            <input id="harmonic" type="number" min="1" max="20" step="1" value="1" required />
+            <input id="harmonic-slider" type="range" min="1" max="20" step="1" value="1" />
+          </label>
+
           <label class="checkbox"><input id="enabled" type="checkbox" checked /> Активна</label>
           <button type="submit">Сохранить</button>
           <button type="button" id="reset-form" class="secondary">Новая гармоника</button>
@@ -34,10 +55,26 @@
       </section>
 
       <section class="charts">
-        <article class="panel chart-card"><h2>Суммарный сигнал</h2><canvas id="signal-chart"></canvas></article>
-        <article class="panel chart-card"><h2>Спектр</h2><canvas id="spectrum-chart"></canvas></article>
-        <article class="panel chart-card"><h2>Чистый спектр гармоник</h2><canvas id="pure-spectrum-chart"></canvas></article>
-        <article class="panel chart-card"><h2>Отфильтрованный спектр</h2><canvas id="filtered-spectrum-chart"></canvas><p id="filter-info"></p></article>
+        <article class="panel chart-card">
+          <h2>Суммарный сигнал</h2>
+          <div class="chart-scroll"><canvas id="signal-chart"></canvas></div>
+          <p class="chart-hint">Проматывайте график по горизонтали. Шкала X — время, Y — амплитуда.</p>
+        </article>
+        <article class="panel chart-card">
+          <h2>Спектр</h2>
+          <div class="chart-scroll"><canvas id="spectrum-chart"></canvas></div>
+          <p class="chart-hint">Шкала X — частота, Y — амплитуда.</p>
+        </article>
+        <article class="panel chart-card">
+          <h2>Чистый спектр гармоник</h2>
+          <div class="chart-scroll"><canvas id="pure-spectrum-chart"></canvas></div>
+          <p class="chart-hint">Показывает только заданные гармоники без шумовых составляющих.</p>
+        </article>
+        <article class="panel chart-card">
+          <h2>Отфильтрованный спектр</h2>
+          <div class="chart-scroll"><canvas id="filtered-spectrum-chart"></canvas></div>
+          <p id="filter-info"></p>
+        </article>
       </section>
     </main>
 

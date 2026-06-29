@@ -87,6 +87,9 @@ main {
 .grid-form { display: grid; gap: 12px; }
 
 label { display: grid; gap: 6px; color: var(--muted); font-size: 0.92rem; }
+.slider-field { grid-template-columns: 1fr 110px; align-items: center; }
+.slider-field span { grid-column: 1 / -1; }
+.slider-field input[type="range"] { grid-column: 1 / -1; padding: 0; accent-color: var(--accent); cursor: pointer; }
 input {
   width: 100%;
   border: 1px solid var(--line);
@@ -113,8 +116,9 @@ input {
 .harmonic-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.chart-card canvas { width: 100%; height: 280px; display: block; }
-#filter-info { color: var(--muted); margin-bottom: 0; }
+.chart-scroll { overflow-x: auto; overflow-y: hidden; padding-bottom: 10px; scrollbar-color: var(--accent) var(--card-soft); }
+.chart-scroll canvas { width: 900px; min-width: 900px; height: 300px; display: block; }
+.chart-hint, #filter-info { color: var(--muted); margin: 10px 0 0; font-size: 0.92rem; }
 
 @media (max-width: 900px) {
   .hero, main { width: min(100% - 20px, 720px); }
