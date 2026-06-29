@@ -24,8 +24,8 @@
 
           <label class="slider-field">
             <span>Амплитуда</span>
-            <input id="amplitude" type="number" min="0" max="10" step="0.1" value="1" required />
-            <input id="amplitude-slider" type="range" min="0" max="10" step="0.1" value="1" />
+            <input id="amplitude" type="number" min="0" max="1000" step="1" value="1" required />
+            <input id="amplitude-slider" type="range" min="0" max="1000" step="1" value="1" />
           </label>
 
           <label class="slider-field">
@@ -53,7 +53,8 @@
           </fieldset>
 
           <label class="checkbox"><input id="enabled" type="checkbox" checked /> Активна</label>
-          <button type="submit">Сохранить</button>
+          <button type="button" id="apply-preview">Применить без сохранения</button>
+          <button type="submit" class="success">Сохранить в БД</button>
           <button type="button" id="reset-form" class="secondary">Новая гармоника</button>
         </form>
         <p id="message" class="message"></p>
@@ -66,7 +67,7 @@
             <span>Масштаб ширины графиков</span>
             <input id="chart-zoom" type="range" min="1" max="3" step="0.25" value="1.5" />
           </label>
-          <span id="hover-info">Наведите курсор на график, чтобы увидеть координаты.</span>
+          <span id="hover-info">Слайдеры меняют форму; нажмите «Применить без сохранения», чтобы увидеть результат без записи в БД.</span>
         </div>
         <article class="panel chart-card">
           <h2>Суммарный сигнал</h2>

@@ -171,6 +171,34 @@ def build_signal(harmonics: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def preview_harmonics(payload: dict[str, Any]) -> tuple[list[dict[str, Any]] | None, str | None]:
+    """Формирует временный список гармоник для предпросмотра без записи в БД."""
+    data, error = validate_harmonic(payload)
+    if error:
+        return None, error
+    harmonics = fetch_harmonics()
+    preview_id = int(payload.get("id") or 0)
+    preview_item = {"id": preview_id or "предпросмотр", **data, "enabled": bool(data["enabled"])}
+
+    replaced = False
+    if preview_id:
+        updated = []
+        for item in harmonics:
+            if item["id"] == preview_id:
+                updated.append(preview_item)
+                replaced = True
+            else:
+                updated.append(item)
+        harmonics = updated
+    if not replaced:
+        harmonics.append(preview_item)
+
+    active_signals = [item for item in harmonics if item["enabled"] and item["mode"] == "signal"]
+    if len(active_signals) > 5:
+        return None, "На график можно вывести не больше 5 отдельных сигналов."
+    return harmonics, None
+
+
 class HarmonicHandler(BaseHTTPRequestHandler):
     """HTTP-обработчик страниц и JSON API."""
 
@@ -189,7 +217,15 @@ class HarmonicHandler(BaseHTTPRequestHandler):
             self.send_json({"error": "Страница не найдена."}, HTTPStatus.NOT_FOUND)
 
     def do_POST(self) -> None:
-        if urlparse(self.path).path != "/api/harmonics":
+        path = urlparse(self.path).path
+        if path == "/api/preview":
+            harmonics, error = preview_harmonics(self.read_json())
+            if error:
+                self.send_json({"error": error}, HTTPStatus.BAD_REQUEST)
+                return
+            self.send_json({"harmonics": harmonics, "visualization": build_signal(harmonics)})
+            return
+        if path != "/api/harmonics":
             self.send_json({"error": "Маршрут не найден."}, HTTPStatus.NOT_FOUND)
             return
         data, error = validate_harmonic(self.read_json())

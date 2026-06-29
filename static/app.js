@@ -104,6 +104,14 @@ function renderHarmonics() {
   });
 }
 
+async function applyPreview() {
+  const payload = { ...readForm(), id: document.getElementById("harmonic-id").value };
+  const data = await requestJson("/api/preview", { method: "POST", body: JSON.stringify(payload) });
+  state.visualization = data.visualization;
+  renderCharts();
+  setMessage("Предпросмотр применён без сохранения в базу данных.");
+}
+
 async function saveHarmonic(id, payload) {
   const method = id ? "PUT" : "POST";
   const url = id ? `/api/harmonics/${id}` : "/api/harmonics";
@@ -119,7 +127,7 @@ async function deleteHarmonic(id) {
   await loadData();
 }
 
-function setupCanvas(canvas, preferredWidth = 1400) {
+function setupCanvas(canvas, preferredWidth = 1900) {
   const ratio = window.devicePixelRatio || 1;
   const width = Math.max(canvas.parentElement.clientWidth, preferredWidth * state.zoom);
   const height = canvas.clientHeight;
@@ -184,7 +192,7 @@ function drawLine(context, values, width, height, min, max, color, widthLine = 2
 }
 
 function drawLineChart(canvas, labels, series) {
-  const preferredWidth = Math.max(1400, labels.length * 3.5);
+  const preferredWidth = Math.max(1900, labels.length * 4.5);
   const { context, width, height } = setupCanvas(canvas, preferredWidth);
   context.clearRect(0, 0, width, height);
   const allValues = series.flatMap((item) => item.values);
@@ -221,7 +229,7 @@ function logPosition(value, minFrequency, maxFrequency, width) {
 }
 
 function drawSpectrum(canvas, points, color) {
-  const preferredWidth = Math.max(1400, points.length * 180);
+  const preferredWidth = Math.max(1900, points.length * 220);
   const { context, width, height } = setupCanvas(canvas, preferredWidth);
   context.clearRect(0, 0, width, height);
   const positive = points.filter((point) => point.frequency > 0);
@@ -276,6 +284,7 @@ document.getElementById("harmonic-form").addEventListener("submit", async (event
   }
 });
 
+document.getElementById("apply-preview").addEventListener("click", () => applyPreview().catch((error) => setMessage(error.message)));
 document.getElementById("reset-form").addEventListener("click", () => fillForm(null));
 document.getElementById("chart-zoom").addEventListener("input", (event) => {
   state.zoom = Number(event.target.value);

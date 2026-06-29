@@ -165,3 +165,30 @@ input {
 @media (max-width: 900px) {
   .chart-toolbar { align-items: flex-start; flex-direction: column; }
 }
+
+.success {
+  background: linear-gradient(135deg, #34d399, #10b981);
+}
+
+.hero, main {
+  width: min(1760px, calc(100% - 24px));
+}
+
+main {
+  grid-template-columns: 380px minmax(0, 1fr);
+}
+
+.charts {
+  grid-template-columns: 1fr;
+}
+
+.chart-scroll {
+  width: 100%;
+  min-height: 560px;
+}
+
+.chart-scroll canvas {
+  width: 1900px;
+  min-width: 1900px;
+  height: 540px;
+}
