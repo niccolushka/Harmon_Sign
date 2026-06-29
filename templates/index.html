@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Гармонический сигнал</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div>
+        <p class="eyebrow">HTML · CSS · JS · Python · SQLite</p>
+        <h1>Визуализация гармонического сигнала</h1>
+        <p>Редактируйте амплитуду, фазу, частоту и номер гармоники, складывайте гармоники и сравнивайте спектры.</p>
+      </div>
+      <a class="export" href="/api/export">Экспорт JSON</a>
+    </header>
+
+    <main>
+      <section class="panel editor">
+        <h2>Гармоники</h2>
+        <form id="harmonic-form" class="grid-form">
+          <input type="hidden" id="harmonic-id" />
+          <label>Амплитуда<input id="amplitude" type="number" min="0" step="0.1" value="1" required /></label>
+          <label>Частота, Гц<input id="frequency" type="number" min="0.1" step="0.1" value="5" required /></label>
+          <label>Фаза, °<input id="phase" type="number" step="1" value="0" required /></label>
+          <label>Гармоника №<input id="harmonic" type="number" min="1" step="1" value="1" required /></label>
+          <label class="checkbox"><input id="enabled" type="checkbox" checked /> Активна</label>
+          <button type="submit">Сохранить</button>
+          <button type="button" id="reset-form" class="secondary">Новая гармоника</button>
+        </form>
+        <p id="message" class="message"></p>
+        <div id="harmonics-list" class="harmonics-list"></div>
+      </section>
+
+      <section class="charts">
+        <article class="panel chart-card"><h2>Суммарный сигнал</h2><canvas id="signal-chart"></canvas></article>
+        <article class="panel chart-card"><h2>Спектр</h2><canvas id="spectrum-chart"></canvas></article>
+        <article class="panel chart-card"><h2>Чистый спектр гармоник</h2><canvas id="pure-spectrum-chart"></canvas></article>
+        <article class="panel chart-card"><h2>Отфильтрованный спектр</h2><canvas id="filtered-spectrum-chart"></canvas><p id="filter-info"></p></article>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
