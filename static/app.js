@@ -129,7 +129,9 @@ async function deleteHarmonic(id) {
 
 function setupCanvas(canvas) {
   const ratio = window.devicePixelRatio || 1;
-  const width = canvas.parentElement.clientWidth || 900;
+  const zoom = Number(canvas.dataset.zoom || 1);
+  const containerWidth = canvas.parentElement.clientWidth || 900;
+  const width = Math.max(containerWidth, containerWidth * zoom);
   const height = canvas.clientHeight;
   canvas.style.width = `${width}px`;
   canvas.width = width * ratio;
@@ -284,6 +286,12 @@ document.getElementById("harmonic-form").addEventListener("submit", async (event
 
 document.getElementById("apply-preview").addEventListener("click", () => applyPreview().catch((error) => setMessage(error.message)));
 document.getElementById("reset-form").addEventListener("click", () => fillForm(null));
+document.querySelectorAll(".chart-zoom").forEach((control) => {
+  control.addEventListener("input", () => {
+    document.getElementById(control.dataset.chart).dataset.zoom = control.value;
+    renderCharts();
+  });
+});
 setupSliderSync();
 setupHoverInfo();
 window.addEventListener("resize", renderCharts);

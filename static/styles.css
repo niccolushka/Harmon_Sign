@@ -137,6 +137,21 @@ input {
 }
 #hover-info { color: var(--muted); }
 
+.chart-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin: -4px 0 12px;
+}
+
+.chart-controls label {
+  width: min(320px, 100%);
+}
+
+.chart-controls input[type="range"] {
+  padding: 0;
+  accent-color: var(--accent);
+}
+
 .chart-scroll {
   width: 100%;
   overflow-x: auto;

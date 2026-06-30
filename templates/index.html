@@ -63,26 +63,46 @@
 
       <section class="charts">
         <div class="panel chart-toolbar">
-          <span id="hover-info">Графики автоматически подстраиваются под ширину окна. Нажмите «Применить без сохранения», чтобы увидеть результат без записи в БД.</span>
+          <span id="hover-info">Каждый график масштабируется отдельно своим слайдером. Нажмите «Применить без сохранения», чтобы увидеть результат без записи в БД.</span>
         </div>
         <article class="panel chart-card">
           <h2>Суммарный сигнал</h2>
-          <div class="chart-scroll"><canvas id="signal-chart"></canvas></div>
+          <div class="chart-controls">
+            <label>Масштаб этого графика
+              <input class="chart-zoom" data-chart="signal-chart" type="range" min="1" max="3" step="0.1" value="1" />
+            </label>
+          </div>
+          <div class="chart-scroll"><canvas id="signal-chart" data-zoom="1"></canvas></div>
           <p class="chart-hint">Проматывайте график по горизонтали. Шкала X — время, Y — амплитуда.</p>
         </article>
         <article class="panel chart-card">
           <h2>Спектр</h2>
-          <div class="chart-scroll"><canvas id="spectrum-chart"></canvas></div>
+          <div class="chart-controls">
+            <label>Масштаб этого графика
+              <input class="chart-zoom" data-chart="spectrum-chart" type="range" min="1" max="3" step="0.1" value="1" />
+            </label>
+          </div>
+          <div class="chart-scroll"><canvas id="spectrum-chart" data-zoom="1"></canvas></div>
           <p class="chart-hint">Шкала X — частота в логарифмическом масштабе, Y — амплитуда.</p>
         </article>
         <article class="panel chart-card">
           <h2>Чистый спектр гармоник</h2>
-          <div class="chart-scroll"><canvas id="pure-spectrum-chart"></canvas></div>
+          <div class="chart-controls">
+            <label>Масштаб этого графика
+              <input class="chart-zoom" data-chart="pure-spectrum-chart" type="range" min="1" max="3" step="0.1" value="1" />
+            </label>
+          </div>
+          <div class="chart-scroll"><canvas id="pure-spectrum-chart" data-zoom="1"></canvas></div>
           <p class="chart-hint">Логарифмическая шкала X показывает только гармоники, добавленные в сумму.</p>
         </article>
         <article class="panel chart-card">
           <h2>Отфильтрованный спектр</h2>
-          <div class="chart-scroll"><canvas id="filtered-spectrum-chart"></canvas></div>
+          <div class="chart-controls">
+            <label>Масштаб этого графика
+              <input class="chart-zoom" data-chart="filtered-spectrum-chart" type="range" min="1" max="3" step="0.1" value="1" />
+            </label>
+          </div>
+          <div class="chart-scroll"><canvas id="filtered-spectrum-chart" data-zoom="1"></canvas></div>
           <p id="filter-info"></p>
         </article>
       </section>
